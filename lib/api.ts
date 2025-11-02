@@ -30,33 +30,7 @@ export const authAPI = {
 export const courseAPI = {
   getAll: () => api.get("/courses/list"),
   create: (data: any) => api.post("/courses/add", data),
-  update: async (id: string, data: any) => {
-    console.log("Updating course:", id, "with data:", data);
-    
-    // Try multiple endpoint variations
-    const endpoints = [
-      { method: "patch", url: `/courses/${id}` },
-      { method: "put", url: `/courses/${id}` },
-      { method: "patch", url: `/courses/update/${id}` },
-      { method: "put", url: `/courses/update/${id}` },
-    ];
-
-    for (const endpoint of endpoints) {
-      try {
-        console.log(`Trying ${endpoint.method.toUpperCase()} ${endpoint.url}`);
-        if (endpoint.method === "patch") {
-          return await api.patch(endpoint.url, data);
-        } else {
-          return await api.put(endpoint.url, data);
-        }
-      } catch (err: any) {
-        console.log(`Failed: ${err.response?.status || err.message}`);
-        continue;
-      }
-    }
-    
-    throw new Error("Course update endpoint not available. Please contact the backend team.");
-  },
+  update: (id: string, data: any) => api.put(`/courses/edit/${id}`, data),
   delete: (id: string) => api.delete(`/courses/delete/${id}`),
 };
 
@@ -71,7 +45,7 @@ export const testimonialAPI = {
   getAll: () => api.get("/testimonials/"),
   create: (data: any) => api.post("/testimonials/", data),
   update: (id: string, data: any) => api.patch(`/testimonials/${id}`, data),
-  delete: (id: string) => api.delete(`/testimonials/${id}`),
+  delete: (id: string) => api.delete(`/testimonials/delete/${id}`),
 };
 
 export const feedbackAPI = {

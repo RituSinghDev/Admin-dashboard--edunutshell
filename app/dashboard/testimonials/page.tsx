@@ -24,8 +24,13 @@ export default function TestimonialsPage() {
   const fetchTestimonials = async () => {
     try {
       const response = await testimonialAPI.getAll();
-      const data = response.data.testimonials || [];
-      setTestimonials(data);
+      console.log("API Response:", response.data);
+      
+      // Handle different response structures
+      const data = response.data.testimonials || response.data.data || response.data || [];
+      console.log("Testimonials data:", data);
+      
+      setTestimonials(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
       setTestimonials([]);
