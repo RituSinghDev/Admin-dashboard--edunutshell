@@ -11,6 +11,7 @@ const menuItems = [
   { name: "Courses", path: "/dashboard/courses", icon: "🎓" },
   { name: "Blogs", path: "/dashboard/blogs", icon: "📝" },
   { name: "Testimonials", path: "/dashboard/testimonials", icon: "💬" },
+  { name: "Enquiries", path: "/dashboard/enquiries", icon: "📧" },
 ];
 
 export default function Sidebar() {

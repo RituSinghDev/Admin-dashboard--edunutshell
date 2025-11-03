@@ -56,3 +56,21 @@ export const userAPI = {
   getProfile: () => api.get("/auth/profile"),
   updateProfile: (data: any) => api.patch("/auth/profile", data),
 };
+
+export const enquiryAPI = {
+  getAll: () =>
+    axios.get("https://sheetdb.io/api/v1/32r64i5cxdi2x", {
+      headers: {
+        Authorization: "Bearer 5t3ohqc39zlaw7wnqolvywww6xzp610dvsgadmqv",
+      },
+    }),
+};
+
+export const supportAPI = {
+  getAll: () =>
+    axios.get("https://sheetdb.io/api/v1/th56i1hfrga3o", {
+      headers: {
+        Authorization: "Bearer 145d1174qu29789m7p23l01fr2juriqaj3l5qezz",
+      },
+    }),
+};
