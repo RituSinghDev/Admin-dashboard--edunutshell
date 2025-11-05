@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 import { courseAPI, blogAPI, testimonialAPI } from "@/lib/api";
 import { getUser } from "@/lib/auth";
+import { 
+  BookOpen, 
+  FileText, 
+  MessageSquare, 
+  Plus, 
+  PenLine, 
+  Mail, 
+  User, 
+  GraduationCap 
+} from "lucide-react";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -51,7 +61,7 @@ export default function DashboardPage() {
     {
       label: "Total Courses",
       value: stats.courses,
-      icon: "🎓",
+      icon: BookOpen,
       gradient: "from-blue-500 to-blue-600",
       bgGradient: "from-blue-50 to-blue-100",
       iconBg: "bg-blue-100",
@@ -61,7 +71,7 @@ export default function DashboardPage() {
     {
       label: "Total Blogs",
       value: stats.blogs,
-      icon: "📝",
+      icon: FileText,
       gradient: "from-purple-500 to-purple-600",
       bgGradient: "from-purple-50 to-purple-100",
       iconBg: "bg-purple-100",
@@ -71,7 +81,7 @@ export default function DashboardPage() {
     {
       label: "Testimonials",
       value: stats.testimonials,
-      icon: "💬",
+      icon: MessageSquare,
       gradient: "from-amber-500 to-orange-600",
       bgGradient: "from-amber-50 to-orange-100",
       iconBg: "bg-amber-100",
@@ -84,21 +94,21 @@ export default function DashboardPage() {
     {
       title: "Add New Course",
       description: "Create a new course for students",
-      icon: "➕",
+      icon: Plus,
       link: "/dashboard/courses",
       color: "blue",
     },
     {
       title: "Write Blog Post",
       description: "Share knowledge with your audience",
-      icon: "✍️",
+      icon: PenLine,
       link: "/dashboard/blogs",
       color: "purple",
     },
     {
       title: "Add Testimonial",
       description: "Share student success stories",
-      icon: "💬",
+      icon: MessageSquare,
       link: "/dashboard/testimonials",
       color: "amber",
     },
@@ -111,21 +121,21 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">
-              Welcome back, {user?.name || 'Admin'}! 👋
+              Welcome back, {user?.name || 'Admin'}!
             </h1>
             <div className="flex flex-col gap-1 text-blue-100">
               <p className="flex items-center gap-2">
-                <span className="text-lg">📧</span>
+                <Mail size={18} />
                 <span className="font-medium">{user?.email || 'N/A'}</span>
               </p>
               <p className="flex items-center gap-2">
-                <span className="text-lg">👤</span>
+                <User size={18} />
                 <span className="font-medium capitalize">Role: {user?.role || 'Admin'}</span>
               </p>
             </div>
           </div>
-          <div className="hidden md:block text-6xl">
-            🎓
+          <div className="hidden md:block">
+            <GraduationCap size={64} className="text-blue-200" />
           </div>
         </div>
       </div>
@@ -152,9 +162,9 @@ export default function DashboardPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div
-                  className={`${stat.iconBg} w-12 h-12 rounded-lg flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300`}
+                  className={`${stat.iconBg} w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
                 >
-                  {stat.icon}
+                  <stat.icon size={24} className={stat.textColor} />
                 </div>
               </div>
               <h3
@@ -182,16 +192,16 @@ export default function DashboardPage() {
             <a
               key={action.title}
               href={action.link}
-              className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
+              className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-xl hover:border-blue-300 transition-all duration-300 hover:-translate-y-2 group overflow-hidden"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                {action.icon}
+              <div className="mb-3">
+                <action.icon size={32} className="text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+              <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors duration-300">
                 {action.title}
               </h3>
-              <p className="text-gray-600 text-sm">{action.description}</p>
+              <p className="text-gray-600 text-sm group-hover:text-gray-700 transition-colors duration-300">{action.description}</p>
             </a>
           ))}
         </div>

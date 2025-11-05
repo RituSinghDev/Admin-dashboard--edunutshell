@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { testimonialAPI } from "@/lib/api";
 import TestimonialModal from "@/components/TestimonialModal";
+import { MessageSquare, Plus, Star } from "lucide-react";
 
 interface Testimonial {
   _id: string;
@@ -68,9 +69,10 @@ export default function TestimonialsPage() {
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
+        <div className="flex items-center gap-2">
+          <MessageSquare size={32} className="text-amber-600" />
           <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Testimonials 💬
+            Testimonials
           </h1>
           <p className="text-gray-600 text-sm">
             Manage student feedback and success stories
@@ -80,9 +82,7 @@ export default function TestimonialsPage() {
           onClick={handleAdd}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 group"
         >
-          <span className="text-lg group-hover:rotate-90 transition-transform duration-300">
-            +
-          </span>
+          <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
           <span>Add Testimonial</span>
         </button>
       </div>
@@ -102,7 +102,7 @@ export default function TestimonialsPage() {
         </div>
       ) : testimonials.length === 0 ? (
         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
-          <div className="text-5xl mb-3">⭐</div>
+          <Star size={48} className="mx-auto mb-3 text-gray-400" />
           <h3 className="text-lg font-bold text-gray-900 mb-2">
             No testimonials yet
           </h3>

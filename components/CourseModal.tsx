@@ -10,6 +10,7 @@ interface Course {
   price: number;
   image: string;
   level: string;
+  category?: string;
 }
 
 interface CourseModalProps {
@@ -29,6 +30,7 @@ export default function CourseModal({
     price: 0,
     image: "",
     level: "",
+    category: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +43,7 @@ export default function CourseModal({
         price: course.price,
         image: course.image,
         level: course.level || "",
+        category: course.category || "",
       });
     }
   }, [course]);
@@ -59,6 +62,7 @@ export default function CourseModal({
         payload.price = formData.price;
       if (formData.image) payload.image = formData.image;
       if (formData.level) payload.level = formData.level;
+      if (formData.category) payload.category = formData.category;
 
       if (course) {
         await courseAPI.update(course._id, payload);
@@ -166,6 +170,27 @@ export default function CourseModal({
               className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               placeholder="Beginner, Intermediate, Advanced"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Category
+            </label>
+            <select
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            >
+              <option value="">Select a category</option>
+              <option value="CSE/IT">CSE/IT</option>
+              <option value="ECE/EEE">ECE/EEE</option>
+              <option value="Mechanical">Mechanical</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Management">Management</option>
+              <option value="Medical">Medical</option>
+            </select>
           </div>
 
           <div className="flex gap-4 pt-4">

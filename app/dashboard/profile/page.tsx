@@ -4,6 +4,18 @@ import { useEffect, useState } from "react";
 import { getUser, setUser as saveUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { userAPI } from "@/lib/api";
+import { 
+  User, 
+  Mail, 
+  Target, 
+  CheckCircle, 
+  IdCard, 
+  Calendar, 
+  RefreshCw, 
+  Edit, 
+  Lock, 
+  Settings 
+} from "lucide-react";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null);
@@ -63,9 +75,10 @@ export default function ProfilePage() {
       )}
 
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-2">
+        <User size={32} className="text-blue-600" />
         <h1 className="text-3xl font-bold text-gray-900 mb-1">
-          Admin Profile 👤
+          Admin Profile
         </h1>
         <p className="text-gray-600 text-sm">
           Manage your account information and settings
@@ -99,8 +112,8 @@ export default function ProfilePage() {
         {/* Name Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-              👤
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <User size={20} className="text-blue-600" />
             </div>
             <div className="flex-1">
               <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -114,8 +127,8 @@ export default function ProfilePage() {
         {/* Email Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-              📧
+            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Mail size={20} className="text-purple-600" />
             </div>
             <div className="flex-1">
               <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -129,8 +142,8 @@ export default function ProfilePage() {
         {/* Role Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-              🎯
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <Target size={20} className="text-amber-600" />
             </div>
             <div className="flex-1">
               <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -146,8 +159,8 @@ export default function ProfilePage() {
         {/* Account Status Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-              ✅
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle size={20} className="text-green-600" />
             </div>
             <div className="flex-1">
               <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -164,8 +177,8 @@ export default function ProfilePage() {
         {user?._id && (
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group md:col-span-2">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-                🆔
+              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <IdCard size={20} className="text-indigo-600" />
               </div>
               <div className="flex-1">
                 <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -181,8 +194,8 @@ export default function ProfilePage() {
         {user?.createdAt && (
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-                📅
+              <div className="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Calendar size={20} className="text-pink-600" />
               </div>
               <div className="flex-1">
                 <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -204,8 +217,8 @@ export default function ProfilePage() {
         {user?.updatedAt && (
           <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group">
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center text-xl group-hover:scale-110 transition-transform duration-300">
-                🔄
+              <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <RefreshCw size={20} className="text-cyan-600" />
               </div>
               <div className="flex-1">
                 <label className="text-xs text-gray-500 uppercase tracking-wide mb-1 block font-semibold">
@@ -229,15 +242,15 @@ export default function ProfilePage() {
         <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
         <div className="flex flex-wrap gap-3">
           <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2 group">
-            <span className="group-hover:scale-110 transition-transform">✏️</span>
+            <Edit size={18} className="group-hover:scale-110 transition-transform" />
             <span>Edit Profile</span>
           </button>
           <button className="bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 border border-gray-300 hover:border-gray-400 flex items-center gap-2 group">
-            <span className="group-hover:scale-110 transition-transform">🔒</span>
+            <Lock size={18} className="group-hover:scale-110 transition-transform" />
             <span>Change Password</span>
           </button>
           <button className="bg-white hover:bg-gray-50 text-gray-700 px-5 py-2.5 rounded-lg font-semibold transition-all duration-300 border border-gray-300 hover:border-gray-400 flex items-center gap-2 group">
-            <span className="group-hover:scale-110 transition-transform">⚙️</span>
+            <Settings size={18} className="group-hover:scale-110 transition-transform" />
             <span>Settings</span>
           </button>
         </div>

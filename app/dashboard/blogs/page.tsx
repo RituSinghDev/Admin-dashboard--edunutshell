@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { blogAPI } from "@/lib/api";
 import BlogModal from "@/components/BlogModal";
+import { FileText, Plus, PenLine, Calendar, Search } from "lucide-react";
 
 interface Blog {
   _id: string;
@@ -18,6 +19,8 @@ export default function BlogsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   const fetchBlogs = async () => {
     try {
@@ -56,12 +59,29 @@ export default function BlogsPage() {
     setShowModal(true);
   };
 
+  // Filter and sort blogs
+  const filteredAndSortedBlogs = blogs
+    .filter((blog) => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        blog.title.toLowerCase().includes(searchLower) ||
+        blog.body.toLowerCase().includes(searchLower) ||
+        blog.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+      );
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.eventDate).getTime();
+      const dateB = new Date(b.eventDate).getTime();
+      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+    });
+
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
+        <div className="flex items-center gap-2">
+          <FileText size={32} className="text-purple-600" />
           <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Blogs 📝
+            Blogs
           </h1>
           <p className="text-gray-600 text-sm">
             Share insights and knowledge with your community
@@ -71,11 +91,38 @@ export default function BlogsPage() {
           onClick={handleAdd}
           className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 group"
         >
-          <span className="text-lg group-hover:rotate-90 transition-transform duration-300">
-            +
-          </span>
+          <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
           <span>Add Blog</span>
         </button>
+      </div>
+
+      {/* Search and Filter Section */}
+      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row gap-3">
+          {/* Search Input */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search blogs by title, content, or tags..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="sm:w-48">
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white cursor-pointer"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       {loading ? (
@@ -91,25 +138,29 @@ export default function BlogsPage() {
             </div>
           ))}
         </div>
-      ) : blogs.length === 0 ? (
+      ) : filteredAndSortedBlogs.length === 0 ? (
         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
-          <div className="text-5xl mb-3">✍️</div>
+          <PenLine size={48} className="mx-auto mb-3 text-gray-400" />
           <h3 className="text-lg font-bold text-gray-900 mb-2">
-            No blogs yet
+            {blogs.length === 0 ? "No blogs yet" : "No blogs found"}
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            Start sharing your knowledge by creating your first blog post
+            {blogs.length === 0
+              ? "Start sharing your knowledge by creating your first blog post"
+              : "Try adjusting your search or filter criteria"}
           </p>
-          <button
-            onClick={handleAdd}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
-          >
-            Write Blog
-          </button>
+          {blogs.length === 0 && (
+            <button
+              onClick={handleAdd}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+            >
+              Write Blog
+            </button>
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {blogs.map((blog, index) => (
+          {filteredAndSortedBlogs.map((blog, index) => (
             <div
               key={blog._id}
               className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 group"
@@ -151,7 +202,7 @@ export default function BlogsPage() {
                     )}
                     {blog.eventDate && (
                       <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <span>📅</span>
+                        <Calendar size={14} />
                         <span>
                           {new Date(blog.eventDate).toLocaleDateString()}
                         </span>

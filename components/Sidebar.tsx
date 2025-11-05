@@ -5,13 +5,21 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { removeToken, removeUser, getUser } from "@/lib/auth";
 import { useEffect, useState } from "react";
+import { 
+  LayoutDashboard, 
+  BookOpen, 
+  FileText, 
+  MessageSquare, 
+  Mail, 
+  LogOut 
+} from "lucide-react";
 
 const menuItems = [
-  { name: "Dashboard", path: "/dashboard", icon: "📊" },
-  { name: "Courses", path: "/dashboard/courses", icon: "🎓" },
-  { name: "Blogs", path: "/dashboard/blogs", icon: "📝" },
-  { name: "Testimonials", path: "/dashboard/testimonials", icon: "💬" },
-  { name: "Enquiries", path: "/dashboard/enquiries", icon: "📧" },
+  { name: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { name: "Courses", path: "/dashboard/courses", icon: BookOpen },
+  { name: "Blogs", path: "/dashboard/blogs", icon: FileText },
+  { name: "Testimonials", path: "/dashboard/testimonials", icon: MessageSquare },
+  { name: "Enquiries", path: "/dashboard/enquiries", icon: Mail },
 ];
 
 export default function Sidebar() {
@@ -67,6 +75,7 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-1.5">
         {menuItems.map((item) => {
           const isActive = pathname === item.path;
+          const IconComponent = item.icon;
           return (
             <Link
               key={item.path}
@@ -77,13 +86,12 @@ export default function Sidebar() {
                   : "text-gray-300 hover:bg-white/10 hover:text-white"
               }`}
             >
-              <span
-                className={`text-xl transition-transform duration-300 ${
+              <IconComponent
+                size={20}
+                className={`transition-transform duration-300 ${
                   isActive ? "scale-110" : "group-hover:scale-110"
                 }`}
-              >
-                {item.icon}
-              </span>
+              />
               <span className="font-medium text-sm">{item.name}</span>
               {isActive && (
                 <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -100,9 +108,10 @@ export default function Sidebar() {
           className="w-full bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white px-4 py-3 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center justify-center gap-2.5 group relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-          <span className="relative text-lg group-hover:rotate-12 transition-transform duration-300">
-            🚪
-          </span>
+          <LogOut
+            size={18}
+            className="relative group-hover:rotate-12 transition-transform duration-300"
+          />
           <span className="relative text-sm font-bold tracking-wide">
             Logout
           </span>
