@@ -48,6 +48,19 @@ export default function DashboardPage() {
     };
 
     fetchStats();
+
+    // Prevent back button navigation from dashboard
+    window.history.pushState(null, '', window.location.href);
+    
+    const handlePopState = () => {
+      window.history.pushState(null, '', window.location.href);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
   // Calculate progress percentage (max 20 items = 100%)

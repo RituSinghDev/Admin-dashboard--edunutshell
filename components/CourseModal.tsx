@@ -54,29 +54,42 @@ export default function CourseModal({
     setLoading(true);
 
     try {
-      // Filter out empty fields for update
-      const payload: any = {};
-      if (formData.title) payload.title = formData.title;
-      if (formData.description) payload.description = formData.description;
-      if (formData.price !== undefined && formData.price !== null)
-        payload.price = formData.price;
-      if (formData.image) payload.image = formData.image;
-      if (formData.level) payload.level = formData.level;
-      if (formData.category) payload.category = formData.category;
+      const payload: any = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        price: Number(formData.price),
+        image: formData.image.trim(),
+      };
+
+      // Only add optional fields if they have values
+      if (formData.level && formData.level.trim()) {
+        payload.level = formData.level.trim();
+      }
+      if (formData.category && formData.category.trim()) {
+        payload.category = formData.category.trim();
+      }
+
+      console.log("Submitting course:", payload);
 
       if (course) {
         await courseAPI.update(course._id, payload);
       } else {
-        await courseAPI.create(formData);
+        await courseAPI.create(payload);
       }
       onSuccess();
     } catch (err: any) {
       console.error("Course operation error:", err);
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Operation failed. Please try again."
-      );
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      console.error("Request data:", err.config?.data);
+      
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error ||
+                          JSON.stringify(err.response?.data) ||
+                          err.message ||
+                          "Server error. Please check if all required fields are filled correctly.";
+      
+      setError(errorMessage);
       setLoading(false);
     }
   };

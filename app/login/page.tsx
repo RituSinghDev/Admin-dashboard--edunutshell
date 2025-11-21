@@ -26,7 +26,7 @@ export default function LoginPage() {
 
       setToken(accessToken);
       setUser(user);
-      router.push("/dashboard");
+      router.replace("/dashboard");
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.response?.data?.message || "Login failed");

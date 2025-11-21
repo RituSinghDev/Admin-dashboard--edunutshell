@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { enquiryAPI, supportAPI } from "@/lib/api";
 
 interface Enquiry {
@@ -25,12 +25,9 @@ export default function EnquiriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"enquiries" | "support">("enquiries");
+  const [deleting, setDeleting] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const [enquiriesRes, supportRes] = await Promise.all([
@@ -45,6 +42,42 @@ export default function EnquiriesPage() {
       console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleDeleteEnquiry = async (email: string) => {
+    if (!confirm("Are you sure you want to delete this enquiry?")) return;
+    
+    try {
+      setDeleting(email);
+      await enquiryAPI.delete(email);
+      setEnquiries(enquiries.filter((e) => e.email !== email));
+      setError("");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete enquiry");
+      console.error("Error deleting enquiry:", err);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const handleDeleteSupport = async (email: string) => {
+    if (!confirm("Are you sure you want to delete this support request?")) return;
+    
+    try {
+      setDeleting(email);
+      await supportAPI.delete(email);
+      setSupportForms(supportForms.filter((s) => s.email !== email));
+      setError("");
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to delete support request");
+      console.error("Error deleting support request:", err);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -120,13 +153,16 @@ export default function EnquiriesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                     Message
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {enquiries.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={6}
+                      colSpan={7}
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       No enquiries found
@@ -156,6 +192,15 @@ export default function EnquiriesPage() {
                       <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
                         {enquiry.message}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => handleDeleteEnquiry(enquiry.email)}
+                          disabled={deleting === enquiry.email}
+                          className="text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {deleting === enquiry.email ? "Deleting..." : "Delete"}
+                        </button>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -184,13 +229,16 @@ export default function EnquiriesPage() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                     Message
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {supportForms.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={5}
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       No support requests found
@@ -213,6 +261,15 @@ export default function EnquiriesPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {support.message}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <button
+                          onClick={() => handleDeleteSupport(support.email)}
+                          disabled={deleting === support.email}
+                          className="text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {deleting === support.email ? "Deleting..." : "Delete"}
+                        </button>
                       </td>
                     </tr>
                   ))

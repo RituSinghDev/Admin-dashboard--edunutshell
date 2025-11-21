@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { courseAPI } from "@/lib/api";
-import CourseModal from "@/components/CourseModal";
+import dynamic from "next/dynamic";
 import { BookOpen, Plus, Trash2, Search } from "lucide-react";
+import { useDebounce } from "@/lib/hooks";
+
+const CourseModal = dynamic(() => import("@/components/CourseModal"), {
+  ssr: false,
+});
 
 interface Course {
   _id: string;
@@ -32,8 +37,9 @@ export default function CoursesPage() {
   const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       const response = await courseAPI.getAll();
       setCourses(response.data);
@@ -42,44 +48,46 @@ export default function CoursesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [fetchCourses]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm("Are you sure you want to delete this course?")) return;
 
     try {
       await courseAPI.delete(id);
-      setCourses(courses.filter((c) => c._id !== id));
+      setCourses(prev => prev.filter((c) => c._id !== id));
     } catch (error) {
       console.error("Error deleting course:", error);
       alert("Failed to delete course");
     }
-  };
+  }, []);
 
-  const handleEdit = (course: Course) => {
+  const handleEdit = useCallback((course: Course) => {
     setEditingCourse(course);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingCourse(null);
     setShowModal(true);
-  };
+  }, []);
 
-  const filteredCourses = courses.filter((course) => {
-    const matchesSearch =
-      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      course.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory =
-      selectedCategory === "All" || course.category === selectedCategory;
+  const filteredCourses = useMemo(() => {
+    return courses.filter((course) => {
+      const matchesSearch = !debouncedSearch || 
+        course.title.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        course.description.toLowerCase().includes(debouncedSearch.toLowerCase());
+      
+      const matchesCategory =
+        selectedCategory === "All" || course.category === selectedCategory;
 
-    return matchesSearch && matchesCategory;
-  });
+      return matchesSearch && matchesCategory;
+    });
+  }, [courses, debouncedSearch, selectedCategory]);
 
   return (
     <div className="animate-fade-in">

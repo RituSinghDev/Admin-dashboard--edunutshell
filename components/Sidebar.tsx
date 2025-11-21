@@ -35,7 +35,7 @@ export default function Sidebar() {
   const handleLogout = () => {
     removeToken();
     removeUser();
-    router.push("/login");
+    router.replace("/login");
   };
 
   return (
@@ -80,6 +80,7 @@ export default function Sidebar() {
             <Link
               key={item.path}
               href={item.path}
+              prefetch={true}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group ${
                 isActive
                   ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"

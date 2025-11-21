@@ -1,9 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { testimonialAPI } from "@/lib/api";
-import TestimonialModal from "@/components/TestimonialModal";
+import dynamic from "next/dynamic";
 import { MessageSquare, Plus, Star } from "lucide-react";
+
+const TestimonialModal = dynamic(() => import("@/components/TestimonialModal"), {
+  ssr: false,
+});
 
 interface Testimonial {
   _id: string;
@@ -22,14 +26,12 @@ export default function TestimonialsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
 
-  const fetchTestimonials = async () => {
+  const fetchTestimonials = useCallback(async () => {
     try {
       const response = await testimonialAPI.getAll();
-      console.log("API Response:", response.data);
       
       // Handle different response structures
       const data = response.data.testimonials || response.data.data || response.data || [];
-      console.log("Testimonials data:", data);
       
       setTestimonials(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -38,33 +40,33 @@ export default function TestimonialsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTestimonials();
-  }, []);
+  }, [fetchTestimonials]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm("Are you sure you want to delete this testimonial?")) return;
 
     try {
       await testimonialAPI.delete(id);
-      setTestimonials(testimonials.filter((t) => t._id !== id));
+      setTestimonials(prev => prev.filter((t) => t._id !== id));
     } catch (error) {
       console.error("Error deleting testimonial:", error);
       alert("Failed to delete testimonial");
     }
-  };
+  }, []);
 
-  const handleEdit = (testimonial: Testimonial) => {
+  const handleEdit = useCallback((testimonial: Testimonial) => {
     setEditingTestimonial(testimonial);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingTestimonial(null);
     setShowModal(true);
-  };
+  }, []);
 
   return (
     <div className="animate-fade-in">

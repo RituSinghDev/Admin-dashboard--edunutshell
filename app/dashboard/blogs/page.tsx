@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { blogAPI } from "@/lib/api";
-import BlogModal from "@/components/BlogModal";
+import dynamic from "next/dynamic";
 import { FileText, Plus, PenLine, Calendar, Search } from "lucide-react";
+import { useDebounce } from "@/lib/hooks";
+
+const BlogModal = dynamic(() => import("@/components/BlogModal"), {
+  ssr: false,
+});
 
 interface Blog {
   _id: string;
@@ -21,8 +26,9 @@ export default function BlogsPage() {
   const [editingBlog, setEditingBlog] = useState<Blog | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
+  const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const fetchBlogs = async () => {
+  const fetchBlogs = useCallback(async () => {
     try {
       const response = await blogAPI.getAll();
       setBlogs(response.data);
@@ -31,49 +37,52 @@ export default function BlogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchBlogs();
-  }, []);
+  }, [fetchBlogs]);
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = useCallback(async (id: string) => {
     if (!confirm("Are you sure you want to delete this blog?")) return;
 
     try {
       await blogAPI.delete(id);
-      setBlogs(blogs.filter((b) => b._id !== id));
+      setBlogs(prev => prev.filter((b) => b._id !== id));
     } catch (error) {
       console.error("Error deleting blog:", error);
       alert("Failed to delete blog");
     }
-  };
+  }, []);
 
-  const handleEdit = (blog: Blog) => {
+  const handleEdit = useCallback((blog: Blog) => {
     setEditingBlog(blog);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     setEditingBlog(null);
     setShowModal(true);
-  };
+  }, []);
 
-  // Filter and sort blogs
-  const filteredAndSortedBlogs = blogs
-    .filter((blog) => {
-      const searchLower = searchQuery.toLowerCase();
-      return (
-        blog.title.toLowerCase().includes(searchLower) ||
-        blog.body.toLowerCase().includes(searchLower) ||
-        blog.tags.some((tag) => tag.toLowerCase().includes(searchLower))
-      );
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.eventDate).getTime();
-      const dateB = new Date(b.eventDate).getTime();
-      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-    });
+  // Memoized filter and sort with debounced search
+  const filteredAndSortedBlogs = useMemo(() => {
+    return blogs
+      .filter((blog) => {
+        if (!debouncedSearch) return true;
+        const searchLower = debouncedSearch.toLowerCase();
+        return (
+          blog.title.toLowerCase().includes(searchLower) ||
+          blog.body.toLowerCase().includes(searchLower) ||
+          blog.tags.some((tag) => tag.toLowerCase().includes(searchLower))
+        );
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.eventDate).getTime();
+        const dateB = new Date(b.eventDate).getTime();
+        return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+      });
+  }, [blogs, debouncedSearch, sortOrder]);
 
   return (
     <div className="animate-fade-in">
