@@ -7,6 +7,7 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 10000, // 10 second timeout
 });
 
 api.interceptors.request.use((config) => {
@@ -16,6 +17,17 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Response interceptor for error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === 'ECONNABORTED') {
+      console.error('Request timeout - server may be sleeping');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authAPI = {
   login: (email: string, password: string) =>
@@ -85,4 +97,18 @@ export const supportAPI = {
         Authorization: "Bearer 145d1174qu29789m7p23l01fr2juriqaj3l5qezz",
       },
     }),
+};
+
+export const examSlotAPI = {
+  getAll: () => api.get("/exam-slots"),
+  getByDate: (date: string) => api.get(`/exam-slots/date/${date}`),
+  create: (data: any) => api.post("/exam-slots", data),
+  update: (id: string, data: any) => api.patch(`/exam-slots/${id}`, data),
+  delete: (id: string) => api.delete(`/exam-slots/${id}`),
+};
+
+export const verificationAPI = {
+  getAll: () => api.get("/verifications"),
+  approve: (id: string) => api.post(`/verifications/${id}/approve`),
+  reject: (id: string, reason: string) => api.post(`/verifications/${id}/reject`, { reason }),
 };

@@ -51,7 +51,12 @@ export default function ProfilePage() {
       }
     };
 
-    fetchUserProfile();
+    // Wait for localStorage to be available (client-side only)
+    const timer = setTimeout(() => {
+      fetchUserProfile();
+    }, 0);
+    
+    return () => clearTimeout(timer);
   }, [router]);
 
   if (loading) {

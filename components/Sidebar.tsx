@@ -11,7 +11,10 @@ import {
   FileText, 
   MessageSquare, 
   Mail, 
-  LogOut 
+  Calendar,
+  UserCheck,
+  LogOut,
+  X
 } from "lucide-react";
 
 const menuItems = [
@@ -20,9 +23,16 @@ const menuItems = [
   { name: "Blogs", path: "/dashboard/blogs", icon: FileText },
   { name: "Testimonials", path: "/dashboard/testimonials", icon: MessageSquare },
   { name: "Enquiries", path: "/dashboard/enquiries", icon: Mail },
+  { name: "Exam Slots", path: "/dashboard/exam-slots", icon: Calendar },
+  { name: "Verifications", path: "/dashboard/verifications", icon: UserCheck },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen = true, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
@@ -39,7 +49,32 @@ export default function Sidebar() {
   };
 
   return (
-    <div className="w-64 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white min-h-screen h-screen sticky top-0 p-5 flex flex-col shadow-xl overflow-y-auto">
+    <>
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`
+        fixed lg:sticky top-0 left-0 z-50
+        w-64 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white 
+        min-h-screen h-screen p-5 flex flex-col shadow-xl overflow-y-auto
+        transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Close Button (Mobile Only) */}
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute top-4 right-4 p-2 hover:bg-white/10 rounded-lg transition-colors"
+          aria-label="Close menu"
+        >
+          <X size={24} />
+        </button>
+
       {/* Logo Section */}
       <div className="mb-6">
         <Image 
@@ -81,6 +116,7 @@ export default function Sidebar() {
               key={item.path}
               href={item.path}
               prefetch={true}
+              onClick={onClose}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group ${
                 isActive
                   ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
@@ -119,5 +155,6 @@ export default function Sidebar() {
         </button>
       </div>
     </div>
+    </>
   );
 }

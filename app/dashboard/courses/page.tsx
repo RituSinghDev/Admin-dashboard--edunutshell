@@ -112,9 +112,9 @@ export default function CoursesPage() {
 
       {/* Search and Filter Section */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col gap-4">
           {/* Search Box */}
-          <div className="flex-1 relative">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
@@ -126,26 +126,29 @@ export default function CoursesPage() {
           </div>
 
           {/* Category Filter */}
-          <div className="flex gap-2 flex-wrap">
-            {CATEGORIES.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2.5 rounded-lg font-semibold text-sm transition-all ${
-                  selectedCategory === category
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div>
+            <p className="text-sm font-semibold text-gray-700 mb-2">Categories</p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:flex lg:flex-wrap gap-2">
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 py-2 rounded-lg font-semibold text-xs sm:text-sm transition-all ${
+                    selectedCategory === category
+                      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
@@ -176,14 +179,14 @@ export default function CoursesPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
           {filteredCourses.map((course, index) => (
             <div
               key={course._id}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="relative overflow-hidden h-40">
+              <div className="relative overflow-hidden h-32 sm:h-40">
                 <img
                   src={course.image}
                   alt={course.title}
@@ -194,28 +197,28 @@ export default function CoursesPage() {
                   }}
                 />
               </div>
-              <div className="p-4">
-                <div className="mb-3">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              <div className="p-3 sm:p-4">
+                <div className="mb-2 sm:mb-3">
+                  <h3 className="text-sm sm:text-lg font-bold text-gray-900 mb-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
                     {course.title}
                   </h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">
+                  <p className="text-gray-600 text-xs sm:text-sm line-clamp-2">
                     {course.description}
                   </p>
                 </div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  <span className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     ₹{course.price}
                   </span>
                   {course.level && (
-                    <span className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-xs font-semibold">
+                    <span className="bg-blue-100 text-blue-700 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold">
                       {course.level}
                     </span>
                   )}
                 </div>
                 {course.category && (
-                  <div className="mb-3">
-                    <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-2.5 py-1 rounded-full text-xs font-semibold">
+                  <div className="mb-2 sm:mb-3">
+                    <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-semibold">
                       {course.category}
                     </span>
                   </div>
@@ -223,15 +226,15 @@ export default function CoursesPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleEdit(course)}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all"
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all"
                   >
                     Edit
                   </button>
                   <button
                     onClick={() => handleDelete(course._id)}
-                    className="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition-all border border-red-200 hover:border-red-600"
+                    className="bg-red-50 hover:bg-red-600 text-red-600 hover:text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-red-200 hover:border-red-600"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={14} className="sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>

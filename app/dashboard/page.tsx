@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { courseAPI, blogAPI, testimonialAPI } from "@/lib/api";
 import { getUser } from "@/lib/auth";
+import { getCache, setCache } from "@/lib/cache";
+import { startKeepAlive } from "@/lib/keepalive";
 import { 
   BookOpen, 
   FileText, 
@@ -20,13 +22,22 @@ export default function DashboardPage() {
     blogs: 0,
     testimonials: 0,
   });
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const currentUser = getUser();
     setUser(currentUser);
 
+    // Start keep-alive to prevent backend from sleeping
+    startKeepAlive();
+
+    // Try to load from cache first for instant display
+    const cachedStats = getCache('dashboard-stats');
+    if (cachedStats) {
+      setStats(cachedStats);
+    }
+
+    // Fetch fresh data in background (non-blocking)
     const fetchStats = async () => {
       try {
         const [coursesRes, blogsRes, testimonialsRes] = await Promise.allSettled([
@@ -35,19 +46,22 @@ export default function DashboardPage() {
           testimonialAPI.getAll(),
         ]);
 
-        setStats({
+        const newStats = {
           courses: coursesRes.status === 'fulfilled' ? (Array.isArray(coursesRes.value.data) ? coursesRes.value.data.length : 0) : 0,
           blogs: blogsRes.status === 'fulfilled' ? (Array.isArray(blogsRes.value.data) ? blogsRes.value.data.length : 0) : 0,
           testimonials: testimonialsRes.status === 'fulfilled' ? (Array.isArray(testimonialsRes.value.data?.testimonials) ? testimonialsRes.value.data.testimonials.length : 0) : 0,
-        });
+        };
+        
+        setStats(newStats);
+        setCache('dashboard-stats', newStats);
       } catch (error) {
         console.error("Error fetching stats:", error);
-      } finally {
-        setLoading(false);
+        // Keep showing cached data on error
       }
     };
 
-    fetchStats();
+    // Delay fetch slightly to prioritize UI render
+    setTimeout(fetchStats, 100);
 
     // Prevent back button navigation from dashboard
     window.history.pushState(null, '', window.location.href);
@@ -154,48 +168,35 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl p-5 shadow-sm animate-pulse"
-            >
-              <div className="h-24 bg-gray-200 rounded"></div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {statCards.map((stat, index) => (
-            <div
-              key={stat.label}
-              className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div
-                  className={`${stat.iconBg} w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
-                >
-                  <stat.icon size={24} className={stat.textColor} />
-                </div>
-              </div>
-              <h3
-                className={`text-3xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-2`}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {statCards.map((stat, index) => (
+          <div
+            key={stat.label}
+            className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
+            style={{ animationDelay: `${index * 100}ms` }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div
+                className={`${stat.iconBg} w-12 h-12 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
               >
-                {stat.value}
-              </h3>
-              <p className="text-gray-600 font-medium">{stat.label}</p>
-              <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className={`h-full bg-gradient-to-r ${stat.gradient} rounded-full transition-all duration-1000`}
-                  style={{ width: `${stat.progress}%` }}
-                ></div>
+                <stat.icon size={24} className={stat.textColor} />
               </div>
             </div>
-          ))}
-        </div>
-      )}
+            <h3
+              className={`text-3xl font-bold bg-gradient-to-r ${stat.gradient} bg-clip-text text-transparent mb-2`}
+            >
+              {stat.value}
+            </h3>
+            <p className="text-gray-600 font-medium">{stat.label}</p>
+            <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full bg-gradient-to-r ${stat.gradient} rounded-full transition-all duration-1000`}
+                style={{ width: `${stat.progress}%` }}
+              ></div>
+            </div>
+          </div>
+        ))}
+      </div>
 
       {/* Quick Actions */}
       <div>

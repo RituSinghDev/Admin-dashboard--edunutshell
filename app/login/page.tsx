@@ -26,13 +26,28 @@ export default function LoginPage() {
 
       setToken(accessToken);
       setUser(user);
-      router.replace("/dashboard");
+      
+      // Use push with prefetch for faster navigation
+      router.push("/dashboard");
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.response?.data?.message || "Login failed");
       setLoading(false);
     }
   };
+
+  // Show loading overlay during login
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-white mx-auto mb-4"></div>
+          <p className="text-white text-lg font-semibold">Signing you in...</p>
+          <p className="text-blue-200 text-sm mt-2">Please wait</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center px-4">

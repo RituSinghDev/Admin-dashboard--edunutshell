@@ -90,25 +90,25 @@ export default function EnquiriesPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Enquiries & Support</h1>
-        <p className="text-gray-600 mt-2">
+    <div className="p-4 sm:p-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Enquiries & Support</h1>
+        <p className="text-gray-600 mt-2 text-sm sm:text-base">
           Manage and view all student enquiries and support requests
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 text-sm">
           {error}
         </div>
       )}
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-4 border-b border-gray-200">
+      <div className="mb-6 flex gap-2 sm:gap-4 border-b border-gray-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab("enquiries")}
-          className={`px-6 py-3 font-semibold transition-all ${
+          className={`px-4 sm:px-6 py-2 sm:py-3 font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
             activeTab === "enquiries"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600 hover:text-gray-800"
@@ -118,7 +118,7 @@ export default function EnquiriesPage() {
         </button>
         <button
           onClick={() => setActiveTab("support")}
-          className={`px-6 py-3 font-semibold transition-all ${
+          className={`px-4 sm:px-6 py-2 sm:py-3 font-semibold transition-all whitespace-nowrap text-sm sm:text-base ${
             activeTab === "support"
               ? "text-blue-600 border-b-2 border-blue-600"
               : "text-gray-600 hover:text-gray-800"
