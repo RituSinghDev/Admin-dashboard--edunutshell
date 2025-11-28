@@ -71,18 +71,20 @@ export default function TestimonialsPage() {
   return (
     <div className="animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex items-center gap-2">
-          <MessageSquare size={32} className="text-amber-600" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-1">
-            Testimonials
-          </h1>
-          <p className="text-gray-600 text-sm">
+        <div>
+          <div className="flex items-center gap-2">
+            <MessageSquare size={32} className="text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">
+              Testimonials
+            </h1>
+          </div>
+          <p className="text-gray-600 text-sm mt-1">
             Manage student feedback and success stories
           </p>
         </div>
         <button
           onClick={handleAdd}
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 group"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg flex items-center gap-2 group"
         >
           <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
           <span>Add Testimonial</span>
@@ -116,7 +118,7 @@ export default function TestimonialsPage() {
           </p>
           <button
             onClick={handleAdd}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold transition-all shadow-md hover:shadow-lg"
           >
             Add Testimonial
           </button>

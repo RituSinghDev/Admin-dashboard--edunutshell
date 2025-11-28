@@ -107,8 +107,20 @@ export const examSlotAPI = {
   delete: (id: string) => api.delete(`/exam-slots/${id}`),
 };
 
+export const examAPI = {
+  getAll: () => api.get("/exams/list"),
+  create: (data: any) => api.post("/exams/create", data),
+};
+
+export const slotAPI = {
+  create: (data: { examId: string; date: string }) => api.post("/slot/create", data),
+  getByExam: (examId: string) => api.get(`/slot/${examId}`),
+};
+
 export const verificationAPI = {
   getAll: () => api.get("/verifications"),
   approve: (id: string) => api.post(`/verifications/${id}/approve`),
   reject: (id: string, reason: string) => api.post(`/verifications/${id}/reject`, { reason }),
+  getPendingStudents: () => api.get("/admin/students/pending"),
+  lookupStudent: (email: string, phone: string) => api.post("/student/lookup", { email, phone }),
 };

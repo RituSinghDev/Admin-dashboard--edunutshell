@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { examSlotAPI } from "@/lib/api";
-import { Calendar, Users, Search, Filter, CheckCircle, Clock, XCircle } from "lucide-react";
+import { examSlotAPI, examAPI, slotAPI } from "@/lib/api";
+import { Calendar, Clock, Plus, X } from "lucide-react";
 import { useDebounce } from "@/lib/hooks";
 
 interface ExamSlot {
@@ -18,77 +18,126 @@ interface ExamSlot {
   bookingDate: string;
 }
 
-const PROGRAMS = ["All", "CSE/IT", "ECE/EEE", "Mechanical", "Agriculture", "Management", "Medical"];
-const PAYMENT_STATUS = ["All", "pending", "completed", "failed"];
+interface Exam {
+  _id: string;
+  title: string;
+  description: string;
+  price: number;
+  totalSlotsPerDay: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Slot {
+  _id: string;
+  exam: string;
+  date: string;
+  bookedCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function ExamSlotsPage() {
   const [slots, setSlots] = useState<ExamSlot[]>([]);
+  const [exams, setExams] = useState<Exam[]>([]);
+  const [examSlots, setExamSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProgram, setSelectedProgram] = useState("All");
-  const [selectedPaymentStatus, setSelectedPaymentStatus] = useState("All");
-  const [selectedDate, setSelectedDate] = useState("");
-  const debouncedSearch = useDebounce(searchQuery, 300);
+  const [selectedExam, setSelectedExam] = useState<string>("");
+  
+  // Modal states
+  const [showExamModal, setShowExamModal] = useState(false);
+  const [showSlotModal, setShowSlotModal] = useState(false);
+  
+  // Form states
+  const [examForm, setExamForm] = useState({
+    title: "",
+    description: "",
+    price: "",
+    totalSlotsPerDay: "150"
+  });
+  
+  const [slotForm, setSlotForm] = useState({
+    examId: "",
+    date: ""
+  });
 
-  const fetchSlots = useCallback(async () => {
+  const fetchExams = useCallback(async () => {
     try {
-      const response = await examSlotAPI.getAll();
-      setSlots(response.data);
+      const response = await examAPI.getAll();
+      setExams(response.data.exams || []);
     } catch (error) {
-      console.error("Error fetching exam slots:", error);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching exams:", error);
+    }
+  }, []);
+
+  const fetchSlotsByExam = useCallback(async (examId: string) => {
+    try {
+      const response = await slotAPI.getByExam(examId);
+      setExamSlots(response.data.slots || []);
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+      setExamSlots([]);
     }
   }, []);
 
   useEffect(() => {
-    // Wait for localStorage to be available (client-side only)
     const timer = setTimeout(() => {
-      fetchSlots();
+      fetchExams();
+      setLoading(false);
     }, 0);
     
     return () => clearTimeout(timer);
-  }, [fetchSlots]);
+  }, [fetchExams]);
 
-  const dailySlotCount = useMemo(() => {
-    const dateToCheck = selectedDate || new Date().toISOString().split('T')[0];
-    return slots.filter(slot => slot.slotDate === dateToCheck).length;
-  }, [slots, selectedDate]);
+  useEffect(() => {
+    if (selectedExam) {
+      fetchSlotsByExam(selectedExam);
+    } else {
+      setExamSlots([]);
+    }
+  }, [selectedExam, fetchSlotsByExam]);
 
-  const filteredSlots = useMemo(() => {
-    return slots.filter((slot) => {
-      const matchesSearch = !debouncedSearch || 
-        slot.studentName.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-        slot.studentEmail.toLowerCase().includes(debouncedSearch.toLowerCase());
-      
-      const matchesProgram = selectedProgram === "All" || slot.program === selectedProgram;
-      const matchesPayment = selectedPaymentStatus === "All" || slot.paymentStatus === selectedPaymentStatus;
-      const matchesDate = !selectedDate || slot.slotDate === selectedDate;
-
-      return matchesSearch && matchesProgram && matchesPayment && matchesDate;
-    });
-  }, [slots, debouncedSearch, selectedProgram, selectedPaymentStatus, selectedDate]);
-
-  const getStatusBadge = (status: string, type: "payment" | "verification") => {
-    const styles = {
-      payment: {
-        completed: "bg-green-100 text-green-700",
-        pending: "bg-yellow-100 text-yellow-700",
-        failed: "bg-red-100 text-red-700"
-      },
-      verification: {
-        approved: "bg-green-100 text-green-700",
-        pending: "bg-yellow-100 text-yellow-700",
-        rejected: "bg-red-100 text-red-700"
-      }
-    };
-
-    return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${styles[type][status as keyof typeof styles[typeof type]]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
+  const handleCreateExam = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await examAPI.create({
+        title: examForm.title,
+        description: examForm.description,
+        price: Number(examForm.price),
+        totalSlotsPerDay: Number(examForm.totalSlotsPerDay)
+      });
+      setShowExamModal(false);
+      setExamForm({ title: "", description: "", price: "", totalSlotsPerDay: "150" });
+      fetchExams();
+      alert("Exam created successfully!");
+    } catch (error) {
+      console.error("Error creating exam:", error);
+      alert("Failed to create exam");
+    }
   };
+
+  const handleCreateSlot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await slotAPI.create({
+        examId: slotForm.examId,
+        date: slotForm.date
+      });
+      setShowSlotModal(false);
+      setSlotForm({ examId: "", date: "" });
+      if (selectedExam) {
+        fetchSlotsByExam(selectedExam);
+      }
+      alert("Slot created successfully!");
+    } catch (error) {
+      console.error("Error creating slot:", error);
+      alert("Failed to create slot");
+    }
+  };
+
+  const selectedExamDetails = useMemo(() => {
+    return exams.find(exam => exam._id === selectedExam);
+  }, [exams, selectedExam]);
 
   return (
     <div className="animate-fade-in">
@@ -96,88 +145,67 @@ export default function ExamSlotsPage() {
         <div>
           <div className="flex items-center gap-2">
             <Calendar size={32} className="text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">Exam Slots</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Exam Slots Management</h1>
           </div>
           <p className="text-gray-600 text-sm mt-1">
-            Manage exam slot bookings and track daily limits
+            Create exams and manage exam slots
           </p>
         </div>
         
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg shadow-lg">
-          <div className="text-xs font-semibold mb-1">
-            {selectedDate ? `Slot Usage (${selectedDate})` : "Today's Slot Usage"}
-          </div>
-          <div className="text-2xl font-bold">
-            {dailySlotCount} / 150
-          </div>
-          <div className="text-xs mt-1">
-            {150 - dailySlotCount} slots remaining
-          </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowExamModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Create Exam
+          </button>
+          <button
+            onClick={() => setShowSlotModal(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all flex items-center gap-2"
+          >
+            <Plus size={20} />
+            Create Slot
+          </button>
         </div>
       </div>
 
-      {/* Filters Section */}
+      {/* Exam Selection */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 shadow-sm">
-        <div className="flex flex-col gap-4">
-          {/* Search Box */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Search by student name or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-            />
-          </div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Select Exam to View Slots</label>
+        <select
+          value={selectedExam}
+          onChange={(e) => setSelectedExam(e.target.value)}
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+        >
+          <option value="">-- Select an Exam --</option>
+          {exams.map((exam) => (
+            <option key={exam._id} value={exam._id}>
+              {exam.title} - ₹{exam.price} ({exam.totalSlotsPerDay} slots/day)
+            </option>
+          ))}
+        </select>
+      </div>
 
-          {/* Filter Options */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Date Filter */}
+      {/* Exam Details */}
+      {selectedExamDetails && (
+        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mb-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{selectedExamDetails.title}</h2>
+          <p className="text-gray-700 mb-3">{selectedExamDetails.description}</p>
+          <div className="flex gap-6 text-sm">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Filter by Date</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              />
+              <span className="text-gray-600">Price:</span>
+              <span className="font-semibold text-gray-900 ml-2">₹{selectedExamDetails.price}</span>
             </div>
-
-            {/* Program Filter */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Program</label>
-              <select
-                value={selectedProgram}
-                onChange={(e) => setSelectedProgram(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              >
-                {PROGRAMS.map((program) => (
-                  <option key={program} value={program}>{program}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Payment Status Filter */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Payment Status</label>
-              <select
-                value={selectedPaymentStatus}
-                onChange={(e) => setSelectedPaymentStatus(e.target.value)}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-              >
-                {PAYMENT_STATUS.map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
+              <span className="text-gray-600">Slots per Day:</span>
+              <span className="font-semibold text-gray-900 ml-2">{selectedExamDetails.totalSlotsPerDay}</span>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Slots Table */}
+      {/* Slots List */}
       {loading ? (
         <div className="bg-white rounded-xl p-8 shadow-sm">
           <div className="animate-pulse space-y-4">
@@ -186,44 +214,47 @@ export default function ExamSlotsPage() {
             ))}
           </div>
         </div>
-      ) : filteredSlots.length === 0 ? (
+      ) : !selectedExam ? (
         <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
           <Calendar size={48} className="mx-auto mb-3 text-gray-400" />
-          <h3 className="text-lg font-bold text-gray-900 mb-2">No exam slots found</h3>
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No Exam Selected</h3>
           <p className="text-gray-600 text-sm">
-            {slots.length === 0 
-              ? "No bookings have been made yet" 
-              : "Try adjusting your search or filter criteria"}
+            Please select an exam to view its slots
+          </p>
+        </div>
+      ) : examSlots.length === 0 ? (
+        <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-12 text-center">
+          <Calendar size={48} className="mx-auto mb-3 text-gray-400" />
+          <h3 className="text-lg font-bold text-gray-900 mb-2">No Slots Found</h3>
+          <p className="text-gray-600 text-sm">
+            No slots have been created for this exam yet
           </p>
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-50 to-indigo-50">
+              <thead className="bg-blue-50">
                 <tr>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Booking ID
+                    Slot ID
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Student Details
+                    Date
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Program
+                    Booked Count
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Slot Date & Time
+                    Available
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Payment
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                    Status
+                    Created At
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredSlots.map((slot) => (
+                {examSlots.map((slot) => (
                   <tr key={slot._id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <span className="font-mono text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
@@ -231,47 +262,168 @@ export default function ExamSlotsPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div>
-                        <div className="font-semibold text-gray-900">{slot.studentName}</div>
-                        <div className="text-sm text-gray-600">{slot.studentEmail}</div>
-                        <div className="text-xs text-gray-500 mt-1">
-                          {slot.registrationStatus === "existing" ? (
-                            <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">Existing Student</span>
-                          ) : (
-                            <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded">New Student</span>
-                          )}
-                        </div>
+                      <div className="flex items-center gap-2 text-gray-900">
+                        <Calendar size={16} className="text-blue-600" />
+                        <span className="font-semibold">
+                          {new Date(slot.date).toLocaleDateString()}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full text-sm font-semibold">
-                        {slot.program}
+                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        {slot.bookedCount}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-gray-900">
-                        <Calendar size={16} className="text-blue-600" />
-                        <span className="font-semibold">{slot.slotDate}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-gray-600 text-sm mt-1">
-                        <Clock size={14} />
-                        <span>{slot.slotTime}</span>
-                      </div>
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                        {selectedExamDetails ? selectedExamDetails.totalSlotsPerDay - slot.bookedCount : 0}
+                      </span>
                     </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(slot.paymentStatus, "payment")}
-                    </td>
-                    <td className="px-6 py-4">
-                      {slot.registrationStatus === "new" && slot.verificationStatus ? (
-                        getStatusBadge(slot.verificationStatus, "verification")
-                      ) : (
-                        <span className="text-gray-500 text-sm">-</span>
-                      )}
+                    <td className="px-6 py-4 text-gray-600 text-sm">
+                      {new Date(slot.createdAt).toLocaleString()}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* Create Exam Modal */}
+      {showExamModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Create New Exam</h2>
+              <button
+                onClick={() => setShowExamModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateExam} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  required
+                  value={examForm.title}
+                  onChange={(e) => setExamForm({ ...examForm, title: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="e.g., 12th pyqs"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <textarea
+                  required
+                  value={examForm.description}
+                  onChange={(e) => setExamForm({ ...examForm, description: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="e.g., full length paper"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Price (₹)</label>
+                <input
+                  type="number"
+                  required
+                  value={examForm.price}
+                  onChange={(e) => setExamForm({ ...examForm, price: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="e.g., 129"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Total Slots Per Day</label>
+                <input
+                  type="number"
+                  required
+                  value={examForm.totalSlotsPerDay}
+                  onChange={(e) => setExamForm({ ...examForm, totalSlotsPerDay: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                  placeholder="e.g., 150"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowExamModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg hover:shadow-lg transition-all"
+                >
+                  Create Exam
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create Slot Modal */}
+      {showSlotModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Create New Slot</h2>
+              <button
+                onClick={() => setShowSlotModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleCreateSlot} className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Select Exam</label>
+                <select
+                  required
+                  value={slotForm.examId}
+                  onChange={(e) => setSlotForm({ ...slotForm, examId: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                  <option value="">-- Select an Exam --</option>
+                  {exams.map((exam) => (
+                    <option key={exam._id} value={exam._id}>
+                      {exam.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Date</label>
+                <input
+                  type="date"
+                  required
+                  value={slotForm.date}
+                  onChange={(e) => setSlotForm({ ...slotForm, date: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowSlotModal(false)}
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg hover:shadow-lg transition-all"
+                >
+                  Create Slot
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
