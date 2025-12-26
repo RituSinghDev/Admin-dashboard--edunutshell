@@ -123,4 +123,6 @@ export const verificationAPI = {
   reject: (id: string, reason: string) => api.post(`/verifications/${id}/reject`, { reason }),
   getPendingStudents: () => api.get("/admin/students/pending"),
   lookupStudent: (email: string, phone: string) => api.post("/student/lookup", { email, phone }),
+  verifyStudent: (id: string) => api.patch(`/admin/students/verify/${id}`),
+  rejectStudent: (id: string) => api.patch(`/admin/students/reject/${id}`),
 };

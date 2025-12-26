@@ -83,27 +83,26 @@ export default function VerificationsPage() {
     if (!confirm("Are you sure you want to approve this student?")) return;
 
     try {
-      await verificationAPI.approve(id);
+      await verificationAPI.verifyStudent(id);
       // Refresh the list
       fetchStudents();
-      alert("Student approved! Confirmation email sent.");
+      alert("Student verified successfully!");
     } catch (error) {
-      console.error("Error approving verification:", error);
-      alert("Failed to approve student");
+      console.error("Error verifying student:", error);
+      alert("Failed to verify student");
     }
   }, [fetchStudents]);
 
   const handleReject = useCallback(async (id: string) => {
-    const reason = prompt("Please provide a reason for rejection:");
-    if (!reason) return;
+    if (!confirm("Are you sure you want to reject this student?")) return;
 
     try {
-      await verificationAPI.reject(id, reason);
+      await verificationAPI.rejectStudent(id);
       // Refresh the list
       fetchStudents();
-      alert("Student rejected. Notification email sent.");
+      alert("Student rejected successfully!");
     } catch (error) {
-      console.error("Error rejecting verification:", error);
+      console.error("Error rejecting student:", error);
       alert("Failed to reject student");
     }
   }, [fetchStudents]);
